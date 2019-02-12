@@ -1,20 +1,31 @@
 const game = require('../game/game.js');
 
 var exports = module.exports = {};
-let room1, room2, room3;
+let main, room1, room2, room3;
 
 
 function mainSocket(ns) {
   ns.on('connection', (socket) => {
     console.log(ns.name + " Socket Connected, Now Connected " + Object.keys(ns.sockets).length + " player");
-    socket.on('disconnect', () => { 
+    socket.on('getPlayerNumber', () => {
+      emitGetPlayerNumber()
+    });
+    socket.on('disconnect', () => {
       console.log(ns.name + " Socket Disconnected, Now Connected " + Object.keys(ns.sockets).length + " player");
     });
   });
 }
 
+function emitGetPlayerNumber() {
+  main.emit('getPlayerNumber', {"room1": Object.keys(room1.connected).length, 
+                                    "room2": Object.keys(room2.connected).length, 
+                                    "room3": Object.keys(room3.connected).length
+                                   });
+}
+
 function gameSocket(ns, roomIndex) {
   ns.on('connection', (socket) => {
+    emitGetPlayerNumber()
     console.log(ns.name + " Socket Connected, Now Connected " + Object.keys(ns.sockets).length + " player");
     socket.on('message', (msg) => {
       switch (msg) {
@@ -29,6 +40,7 @@ function gameSocket(ns, roomIndex) {
       }
     });
     socket.on('disconnect', () => {
+      emitGetPlayerNumber()
       console.log(ns.name + " Socket Disconnected, Now Connected " + Object.keys(ns.sockets).length + " player");
     });
   });
