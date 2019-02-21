@@ -99,10 +99,24 @@ function startGame(config, ns) {
   config["black"].emit("turn", "");
 }
 
-module.exports.prepareGame = (ns, roomIndex) => {
+module.exports.gameStatus = [false, false, false];
+
+module.exports.prepareGame = (ns, roomIndex, emitGetPlayerNumber) => {
   console.log("Start Game");
+  module.exports.gameStatus[roomIndex - 1] = true;
+  emitGetPlayerNumber()
+  console.log(module.exports.gameStatus);
   let config = resetRoomConfig(Object.values(ns.connected)[0], Object.values(ns.connected)[1]);
   config["black"].emit('startGame', {"startGame": true, "stone": "black"});
   config["white"].emit('startGame', {"startGame": true, "stone": "white"});
   startGame(config, ns)
+}
+
+module.exports.emitDisconnectedOppositePlayer = (ns, roomIndex, emitGetPlayerNumber) => {
+  if (module.exports.gameStatus[roomIndex - 1] == true) {
+    module.exports.gameStatus[roomIndex - 1] = false
+    emitGetPlayerNumber()
+    ns.emit("disconnectedOppositePlayer", "");
+  }
+  console.log(module.exports.gameStatus);
 }

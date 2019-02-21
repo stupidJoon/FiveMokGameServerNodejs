@@ -4,10 +4,7 @@ var exports = module.exports = {};
 let main, room1, room2, room3;
 
 function emitGetPlayerNumber() {
-  main.emit('getPlayerNumber', { "room1": Object.keys(room1.connected).length, 
-                                 "room2": Object.keys(room2.connected).length, 
-                                 "room3": Object.keys(room3.connected).length
-                               });
+  main.emit('getPlayerNumber', { "room1": Object.keys(room1.connected).length, "room2": Object.keys(room2.connected).length, "room3": Object.keys(room3.connected).length, "status": game.gameStatus });
 }
 
 function mainSocket(ns) {
@@ -30,15 +27,16 @@ function gameSocket(ns, roomIndex) {
       switch (msg) {
         case "startGame":
           if (Object.keys(ns.sockets).length == 2) {
-            game.prepareGame(ns, roomIndex);
+            game.prepareGame(ns, roomIndex, emitGetPlayerNumber);
           }
           else {
-            socket.emit('startGame', {"startGame": false, "message": "StartGame Failed Because Member of Player are " + Object.keys(ns.sockets).length})
+            socket.emit('startGame', {"startGame": false, "message": "StartGame Failed Because Member of Player are " + Object.keys(ns.sockets).length});
           }
           break;
       }
     });
     socket.on('disconnect', () => {
+      game.emitDisconnectedOppositePlayer(ns, roomIndex, emitGetPlayerNumber);
       emitGetPlayerNumber()
       console.log(ns.name + " Socket Disconnected, Now Connected " + Object.keys(ns.sockets).length + " player");
     });
