@@ -77,11 +77,16 @@ function isWin(stoneColor, stoneArr) {
   }
 }
 
-function startGame(config, ns) {
+function startGame(config, ns, roomIndex) {
   // 검정색 턴
   config["black"].on('putStone', (msg) => {
     config["stones"][msg["y"]][msg["x"]] = "black";
     ns.emit("putStone", {"x": msg["x"], "y": msg["y"], "color": "black"});
+    if (isWin("black", config["stones"]) == true) {
+      ns.emit("winFiveMok", {"winColor": "black"});
+      module.exports.gameStatus[roomIndex - 1] = false;
+      return 0;
+    }
     config["turn"] += 1;
     console.log("White Turn " + config["turn"]);
     config["white"].emit("turn", "");
@@ -90,6 +95,11 @@ function startGame(config, ns) {
   config["white"].on('putStone', (msg) => {
     config["stones"][msg["y"]][msg["x"]] = "white";
     ns.emit("putStone", {"x": msg["x"], "y": msg["y"], "color": "white"});
+    if (isWin("black", config["stones"]) == true) {
+      ns.emit("winFiveMok", {"winColor": "white"});
+      module.exports.gameStatus[roomIndex - 1] = false;
+      return 0;
+    }
     config["turn"] += 1;
     console.log("Black Turn " + config["turn"]);
     config["black"].emit("turn", "");
@@ -105,11 +115,10 @@ module.exports.prepareGame = (ns, roomIndex, emitGetPlayerNumber) => {
   console.log("Start Game");
   module.exports.gameStatus[roomIndex - 1] = true;
   emitGetPlayerNumber()
-  console.log(module.exports.gameStatus);
   let config = resetRoomConfig(Object.values(ns.connected)[0], Object.values(ns.connected)[1]);
   config["black"].emit('startGame', {"startGame": true, "stone": "black"});
   config["white"].emit('startGame', {"startGame": true, "stone": "white"});
-  startGame(config, ns)
+  startGame(config, ns, roomIndex)
 }
 
 module.exports.emitDisconnectedOppositePlayer = (ns, roomIndex, emitGetPlayerNumber) => {
@@ -118,5 +127,4 @@ module.exports.emitDisconnectedOppositePlayer = (ns, roomIndex, emitGetPlayerNum
     emitGetPlayerNumber()
     ns.emit("disconnectedOppositePlayer", "");
   }
-  console.log(module.exports.gameStatus);
 }
