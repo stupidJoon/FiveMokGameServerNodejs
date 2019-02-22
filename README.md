@@ -1,4 +1,4 @@
-# socketGameServer1   
+# FiveMokGameServerNodejs    
 
-바둑 기본 게임 서버 Nodejs Socket.io 입니다.  
-바둑, 오목 등을 만들기 위한 기본을 만들었습니다.  
+오목 서버 Nodejs, Socket.io  
+오목 승리, 탈주, 방 3개 구현
